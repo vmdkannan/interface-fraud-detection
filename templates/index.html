@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Demo App</title>
+    <style>
+        /* Center the content */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        /* Container to hold the entire content */
+        .container {
+            text-align: center;
+            width: 80%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Individual box styling */
+        .box {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Headings */
+        h1 {
+            color: #333;
+        }
+
+        h2 {
+            color: #555;
+        }
+
+        /* Button styling */
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        /* Button hover effect */
+        button:hover {
+            background-color: #45a049;
+        }
+
+        /* Textarea styling */
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        /* Input field styling */
+        input[type="text"] {
+            padding: 10px;
+            width: 70%;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        /* Result area styling */
+        pre {
+            text-align: left;
+            background-color: #eef;
+            padding: 10px;
+            border-radius: 5px;
+            overflow: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Application Title -->
+        <h1>Transaction Demo App</h1>
+
+        <!-- Section to Post a Transaction -->
+        <div class="box">
+            <h2>Post a Transaction</h2>
+            <!-- Textarea for inputting transaction data in JSON format -->
+            <textarea id="transactionData" rows="8" cols="70">
+                    {
+                        "amount": 77.80,
+                        "currency": "EUR",
+                        "trans_num": "txn00dfbtfhg123",
+                        "unix_time": 1672444800,
+                        "customer_id": 1,
+                        "merchant_id": 1,
+                        "product_id": 2,
+                        "location_id": 2
+                    }
+            </textarea>
+            <br>
+            <!-- Button to trigger the postTransaction function -->
+            <button onclick="postTransaction()">Submit Transaction</button>
+        </div>
+
+        <!-- Section to Predict Fraud Detection for a Transaction -->
+        <div class="box">
+            <h2>Prediction Transaction Fraud Detection</h2>
+            <!-- Input field for entering a Transaction ID -->
+            <label for="transactionId">Transaction ID:</label>
+            <input type="text" id="transactionId">
+            <!-- Button to trigger the getTransaction function -->
+            <button onclick="getTransaction()">Get Transaction</button>
+        </div>
+
+        <!-- Area to display results returned from API -->
+        <pre id="result"></pre>
+    </div>
+
+    <script>
+        // Function to send transaction data to the server
+        async function postTransaction() {
+            const transactionData = document.getElementById('transactionData').value; // Get JSON input from textarea
+            try {
+                // Make a POST request to the API with transaction data
+                const response = await fetch('/api/transaction', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: transactionData
+                });
+
+                // Parse and display the result in a formatted way
+                const result = await response.json();
+                document.getElementById('result').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                // Display an error message in case of failure
+                document.getElementById('result').textContent = 'Error posting transaction: ' + error;
+            }
+        }
+
+        // Function to fetch transaction details by ID
+        async function getTransaction() {
+            const id = document.getElementById('transactionId').value; // Get Transaction ID from input field
+            if (!id) {
+                // Alert if Transaction ID is not provided
+                alert('Please enter a Transaction ID.');
+                return;
+            }
+            try {
+                // Make a GET request to the API with the Transaction ID as a query parameter
+                const response = await fetch(`/api/transaction?id=${id}`);
+                
+                // Check if the response status is OK
+                if (!response.ok) {
+                    throw new Error('Transaction not found');
+                }
+
+                // Parse the response JSON
+                const result = await response.json();
+                
+                // Check if the response contains an error or is empty
+                if (result.error) {
+                    document.getElementById('result').textContent = 'Transaction not found';
+                } else {
+                    // Display the transaction details in a formatted way
+                    document.getElementById('result').textContent = JSON.stringify(result, null, 2);
+                }
+            } catch (error) {
+                // Display an error message in case of failure
+                document.getElementById('result').textContent = 'Error retrieving transaction: ' + error.message;
+            }
+        }
+
+    </script>
+</body>
+</html>
+
+</html>
